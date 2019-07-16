@@ -52,12 +52,14 @@
 
     NSDate *expirationDate = [[NSDateFormatter pffb_preciseDateFormatter] dateFromString:expirationDateString];
     FBSDKAccessToken *token = [[FBSDKAccessToken alloc] initWithTokenString:accessToken
-                                                                permissions:nil
-                                                        declinedPermissions:nil
+                                                                permissions:@[]
+                                                        declinedPermissions:@[]
+                                                         expiredPermissions:@[]
                                                                       appID:[FBSDKSettings appID]
                                                                      userID:authData[@"id"]
                                                              expirationDate:expirationDate
-                                                                refreshDate:nil];
+                                                                refreshDate:nil
+                                                   dataAccessExpirationDate:nil];
     return token;
 }
 

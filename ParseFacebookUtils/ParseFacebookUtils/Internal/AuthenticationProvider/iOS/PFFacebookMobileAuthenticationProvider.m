@@ -45,16 +45,10 @@
 - (BFTask<NSDictionary<NSString *, NSString *>*> *)authenticateAsyncWithReadPermissions:(nullable NSArray<NSString *> *)readPermissions
                                                                      publishPermissions:(nullable NSArray<NSString *> *)publishPermissions
                                                                      fromViewComtroller:(UIViewController *)viewController {
-    if (readPermissions && publishPermissions) {
-        NSString *description = @"Read permissions are not permitted to be requested with publish permissions.";
-        NSError *error = [NSError errorWithDomain:PFParseErrorDomain
-                                             code:kPFErrorFacebookInvalidSession
-                                         userInfo:@{ NSLocalizedDescriptionKey: description }];
-        return [BFTask taskWithError:error];
-    }
+    NSArray *permissions = [readPermissions arrayByAddingObjectsFromArray:publishPermissions];
 
     BFTaskCompletionSource *taskCompletionSource = [BFTaskCompletionSource taskCompletionSource];
-    FBSDKLoginManagerRequestTokenHandler resultHandler = ^(FBSDKLoginManagerLoginResult *result, NSError *error) {
+    FBSDKLoginManagerLoginResultBlock resultHandler = ^(FBSDKLoginManagerLoginResult *result, NSError *error) {
         if (result.isCancelled) {
             [taskCompletionSource cancel];
         } else if (error) {
@@ -63,15 +57,9 @@
             taskCompletionSource.result = [PFFacebookPrivateUtilities userAuthenticationDataFromAccessToken:result.token];
         }
     };
-    if (publishPermissions) {
-        [self.loginManager logInWithPublishPermissions:publishPermissions
-                                    fromViewController:viewController
-                                               handler:resultHandler];
-    } else {
-        [self.loginManager logInWithReadPermissions:readPermissions
-                                 fromViewController:viewController
-                                            handler:resultHandler];
-    }
+    [self.loginManager logInWithPermissions:permissions
+                         fromViewController:viewController
+                                    handler:resultHandler];
     return taskCompletionSource.task;
 }
 
